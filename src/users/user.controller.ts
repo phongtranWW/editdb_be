@@ -7,11 +7,30 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-@Controller()
+@ApiTags('Users')
+@ApiBearerAuth()
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @ApiResponse({
+    status: 200,
+    description: 'User profile returned',
+    schema: {
+      type: 'object',
+      properties: {
+        email: { type: 'string' },
+        name: { type: 'string' },
+        avatar: { type: 'string' },
+        isActive: { type: 'boolean' },
+        createdAt: { type: 'string' },
+        updatedAt: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @Get('me')
   @UseGuards(JwtGuard)
   async getProfile(@Request() req) {
