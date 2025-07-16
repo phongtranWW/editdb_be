@@ -29,6 +29,7 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/terminus": "^11.0.0",
+    "class-transformer": "^0.5.1",
     "mongoose": "^8.16.3",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",

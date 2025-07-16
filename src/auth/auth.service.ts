@@ -12,11 +12,10 @@ export class AuthService {
 
   async validateOAuthLogin(payload: {
     email: string;
-    firstName: string;
-    lastName: string;
-    picture: string;
+    name: string;
     provider: string;
     providerId: string;
+    avatar?: string;
   }): Promise<JwtPayload> {
     let userByEmail = await this.userService.findOneByEmail(payload.email);
 
@@ -24,10 +23,9 @@ export class AuthService {
       // Create new user
       userByEmail = await this.userService.create({
         email: payload.email,
-        firstName: payload.firstName,
-        lastName: payload.lastName,
-        avatar: payload.picture,
-        provider: [
+        name: payload.name,
+        avatar: payload.avatar,
+        providers: [
           {
             provider: payload.provider,
             providerId: payload.providerId,
@@ -58,10 +56,9 @@ export class AuthService {
     };
   }
 
-  login(user: JwtPayload) {
-    const payload = { sub: user.sub, email: user.email, roles: user.roles };
+  provideToken(payload: JwtPayload) {
     return {
-      access_token: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload),
     };
   }
 }

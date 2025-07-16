@@ -24,13 +24,22 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     profile: Profile,
     done: VerifyCallback,
   ) {
-    done(null, {
-      email: profile.emails[0].value,
-      firstName: profile.name.givenName,
-      lastName: profile.name.familyName,
-      picture: profile.photos[0].value,
+    if (!profile.emails?.[0].value) {
+      return done(null, false, { message: 'Email not found' });
+    }
+
+    if (!profile.displayName) {
+      return done(null, false, { message: 'Name not found' });
+    }
+
+    const payload = await this.authService.validateOAuthLogin({
+      email: profile.emails?.[0].value,
+      name: profile.displayName,
       provider: 'google',
       providerId: profile.id,
+      avatar: profile.photos?.[0].value,
     });
+
+    return done(null, payload);
   }
 }

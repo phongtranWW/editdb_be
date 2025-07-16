@@ -1,13 +1,12 @@
 export class CreateUserDto {
   email: string;
-  firstName: string;
-  lastName: string;
-  avatar: string;
-  provider: {
+  name: string;
+  providers: {
     provider: string;
     providerId: string;
     hash?: string;
   }[];
+  avatar?: string;
   roles?: string[];
   isActive?: boolean;
 }
