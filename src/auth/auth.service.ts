@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/users/user.service';
 import { JwtPayload } from './strategies/types/jwt-payload.type';
@@ -57,8 +57,13 @@ export class AuthService {
   }
 
   provideToken(payload: JwtPayload) {
-    return {
-      accessToken: this.jwtService.sign(payload),
-    };
+    try {
+      return {
+        accessToken: this.jwtService.sign(payload),
+      };
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      throw new InternalServerErrorException(error.message);
+    }
   }
 }
