@@ -1,0 +1,12 @@
+export enum ColumnDataType {
+  INTEGER = 'INTEGER',
+  TEXT = 'TEXT',
+  VARCHAR = 'VARCHAR',
+  BOOLEAN = 'BOOLEAN',
+  DATE = 'DATE',
+  TIMESTAMP = 'TIMESTAMP',
+  FLOAT = 'FLOAT',
+  DOUBLE = 'DOUBLE',
+  DECIMAL = 'DECIMAL',
+  UUID = 'UUID',
+}
