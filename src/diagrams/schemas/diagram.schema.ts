@@ -19,6 +19,7 @@ export class Diagram {
   @Prop({
     type: [
       {
+        id: { type: String, required: true },
         name: {
           type: String,
           required: true,
@@ -29,6 +30,7 @@ export class Diagram {
         },
         columns: [
           {
+            id: { type: String, required: true },
             name: { type: String, required: true },
             type: {
               type: String,
@@ -46,9 +48,11 @@ export class Diagram {
     default: [],
   })
   tables: {
+    id: string;
     name: string;
     position: { x: number; y: number };
     columns: {
+      id: string;
       name: string;
       type: ColumnDataType;
       isPrimary: boolean;
@@ -61,12 +65,13 @@ export class Diagram {
   @Prop({
     type: [
       {
+        id: { type: String, required: true },
         name: { type: String, required: true },
         fromTable: { type: String, required: true },
         fromColumn: { type: String, required: true },
         toTable: { type: String, required: true },
         toColumn: { type: String, required: true },
-        relationshipType: {
+        type: {
           type: String,
           enum: Object.values(RelationshipType),
           required: true,
@@ -76,12 +81,13 @@ export class Diagram {
     default: [],
   })
   relationships: {
+    id: string;
     name: string;
     fromTable: string;
     fromColumn: string;
     toTable: string;
     toColumn: string;
-    relationshipType: RelationshipType;
+    type: RelationshipType;
   }[];
 }
 

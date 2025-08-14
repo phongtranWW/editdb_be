@@ -3,6 +3,11 @@ import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { RelationshipType } from '../types/relationship.type';
 
 export class RelationshipDto {
+  @ApiProperty({ description: 'Relationship id', example: '1' })
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
   @ApiProperty({ description: 'Relationship name', example: 'user_posts' })
   @IsString()
   @IsNotEmpty()
@@ -34,5 +39,5 @@ export class RelationshipDto {
     example: RelationshipType.ONE_TO_MANY,
   })
   @IsEnum(RelationshipType)
-  relationshipType: RelationshipType;
+  type: RelationshipType;
 }

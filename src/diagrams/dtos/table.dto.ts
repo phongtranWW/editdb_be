@@ -5,6 +5,11 @@ import { PositionDto } from './position.dto';
 import { ColumnDto } from './column.dto';
 
 export class TableDto {
+  @ApiProperty({ description: 'Table id', example: '1' })
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
   @ApiProperty({ description: 'Table name', example: 'users' })
   @IsString()
   @IsNotEmpty()

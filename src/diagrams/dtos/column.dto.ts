@@ -9,6 +9,11 @@ import {
 import { ColumnDataType } from '../types/column-data.type';
 
 export class ColumnDto {
+  @ApiProperty({ description: 'Column id', example: '1' })
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
   @ApiProperty({ description: 'Column name', example: 'id' })
   @IsString()
   @IsNotEmpty()
@@ -17,7 +22,7 @@ export class ColumnDto {
   @ApiProperty({
     description: 'Column data type',
     enum: ColumnDataType,
-    example: ColumnDataType.INTEGER,
+    example: ColumnDataType.VARCHAR,
   })
   @IsEnum(ColumnDataType)
   type: ColumnDataType;
