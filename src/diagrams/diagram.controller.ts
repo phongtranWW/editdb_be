@@ -47,6 +47,21 @@ export class DiagramController {
     return this.diagramService.findByUser(user.sub);
   }
 
+  @ApiResponse({
+    status: 200,
+    type: DiagramDetailDto,
+  })
+  @ApiResponse({ status: 404, description: 'Diagram not found' })
+  @Get(':id')
+  @UseGuards(JwtGuard)
+  async findById(@Param('id') id: string, @Req() req: Request) {
+    const user = req.user as JwtPayload;
+    if (!user || !user.sub) {
+      throw new NotFoundException('User not found in request');
+    }
+    return this.diagramService.findById(id);
+  }
+
   @Post()
   @ApiBody({ type: CreateDiagramDto })
   @ApiResponse({ status: 201, type: DiagramDetailDto })

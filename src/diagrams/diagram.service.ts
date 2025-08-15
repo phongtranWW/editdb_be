@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -36,6 +35,27 @@ export class DiagramService {
     }
   }
 
+  async findById(id: string): Promise<DiagramDetailDto> {
+    const diagram = await this.diagramModel.findById(id).select('-__v').exec();
+
+    if (!diagram) {
+      throw new NotFoundException('Diagram not found');
+    }
+
+    try {
+      return {
+        id: diagram._id.toString(),
+        name: diagram.name,
+        description: diagram.description,
+        tables: diagram.tables,
+        relationships: diagram.relationships,
+      };
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
   async create(
     userId: string,
     dto: CreateDiagramDto,
@@ -58,31 +78,6 @@ export class DiagramService {
   }
 
   async update(id: string, dto: UpdateDiagramDto): Promise<DiagramDetailDto> {
-    // Validate diagram's tables
-    const tableNames = dto.tables.map((table) => table.name);
-    if (tableNames.length !== new Set(tableNames).size) {
-      throw new BadRequestException('Table names must be unique');
-    }
-
-    // Validate diagram's relationships
-    const relationshipNames = dto.relationships.map(
-      (relationship) => relationship.name,
-    );
-    if (relationshipNames.length !== new Set(relationshipNames).size) {
-      throw new BadRequestException('Relationship names must be unique');
-    }
-
-    // Validate table's columns
-    for (const table of dto.tables) {
-      const columnNames = table.columns.map((column) => column.name);
-      const uniqueColumnNames = new Set(columnNames);
-      if (columnNames.length !== uniqueColumnNames.size) {
-        throw new BadRequestException(
-          `Column names in table "${table.name}" must be unique`,
-        );
-      }
-    }
-
     const diagram = await this.diagramModel.findById(id);
     if (!diagram) {
       throw new NotFoundException('Diagram not found');

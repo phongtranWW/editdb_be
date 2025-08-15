@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { RelationshipType } from '../types/relationship.type';
 
 export class RelationshipDto {
@@ -13,24 +13,24 @@ export class RelationshipDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ description: 'Source table name', example: 'users' })
+  @ApiProperty({ description: 'Source table name' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   fromTable: string;
 
-  @ApiProperty({ description: 'Source column name', example: 'id' })
+  @ApiProperty({ description: 'Source column name' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   fromColumn: string;
 
   @ApiProperty({ description: 'Target table name', example: 'posts' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   toTable: string;
 
   @ApiProperty({ description: 'Target column name', example: 'user_id' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   toColumn: string;
 
   @ApiProperty({

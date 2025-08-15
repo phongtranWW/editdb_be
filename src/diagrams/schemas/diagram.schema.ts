@@ -19,6 +19,7 @@ export class Diagram {
   @Prop({
     type: [
       {
+        _id: false,
         id: { type: String, required: true },
         name: {
           type: String,
@@ -30,6 +31,7 @@ export class Diagram {
         },
         columns: [
           {
+            _id: false,
             id: { type: String, required: true },
             name: { type: String, required: true },
             type: {
@@ -65,16 +67,16 @@ export class Diagram {
   @Prop({
     type: [
       {
+        _id: false,
         id: { type: String, required: true },
         name: { type: String, required: true },
-        fromTable: { type: String, required: true },
-        fromColumn: { type: String, required: true },
-        toTable: { type: String, required: true },
-        toColumn: { type: String, required: true },
+        fromTable: { type: String },
+        fromColumn: { type: String },
+        toTable: { type: String },
+        toColumn: { type: String },
         type: {
           type: String,
           enum: Object.values(RelationshipType),
-          required: true,
         },
       },
     ],
