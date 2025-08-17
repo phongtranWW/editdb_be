@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { RelationshipType } from '../types/relationship.type';
+import { RelationshipType } from '../../types/relationship.type';
 
 export class RelationshipDto {
   @ApiProperty({ description: 'Relationship id', example: '1' })
@@ -16,28 +16,29 @@ export class RelationshipDto {
   @ApiProperty({ description: 'Source table name' })
   @IsOptional()
   @IsString()
-  fromTable: string;
+  fromTable?: string;
 
   @ApiProperty({ description: 'Source column name' })
   @IsOptional()
   @IsString()
-  fromColumn: string;
+  fromColumn?: string;
 
   @ApiProperty({ description: 'Target table name', example: 'posts' })
   @IsOptional()
   @IsString()
-  toTable: string;
+  toTable?: string;
 
   @ApiProperty({ description: 'Target column name', example: 'user_id' })
   @IsOptional()
   @IsString()
-  toColumn: string;
+  toColumn?: string;
 
   @ApiProperty({
     description: 'Relationship type',
     enum: RelationshipType,
     example: RelationshipType.ONE_TO_MANY,
   })
+  @IsOptional()
   @IsEnum(RelationshipType)
-  type: RelationshipType;
+  type?: RelationshipType;
 }

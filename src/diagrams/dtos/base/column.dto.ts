@@ -6,7 +6,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { ColumnDataType } from '../types/column-data.type';
+import { ColumnDataType } from 'src/diagrams/types/column-data.type';
 
 export class ColumnDto {
   @ApiProperty({ description: 'Column id', example: '1' })
@@ -40,7 +40,8 @@ export class ColumnDto {
   isNullable: boolean;
 
   @ApiPropertyOptional({ description: 'Default value', example: null })
-  @IsString()
   @IsOptional()
+  @IsString()
+  @IsNotEmpty()
   default?: string;
 }

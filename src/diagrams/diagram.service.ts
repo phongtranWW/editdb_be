@@ -5,11 +5,12 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Diagram } from './schemas/diagram.schema';
-import { Model } from 'mongoose';
-import { CreateDiagramDto } from './dtos/create-diagram.dto';
-import { UpdateDiagramDto } from './dtos/update-diagram.dto';
-import { DiagramDto } from './dtos/diagram.dto';
-import { DiagramDetailDto } from './dtos/diagram-detail.dto';
+import { FilterQuery, Model } from 'mongoose';
+import { CreateDiagramDto } from './dtos/request/create-diagram.dto';
+import { UpdateDiagramDto } from './dtos/request/update-diagram.dto';
+import { SummaryDiagramDto } from './dtos/response/summary-diagram.dto';
+import { DiagramDto } from './dtos/response/diagram.dto';
+import { UpdateShareSettingsDto } from './dtos/request/update-share-setting.dto';
 
 @Injectable()
 export class DiagramService {
@@ -17,49 +18,49 @@ export class DiagramService {
     @InjectModel(Diagram.name) private diagramModel: Model<Diagram>,
   ) {}
 
-  async findByUser(userId: string): Promise<DiagramDto[]> {
-    try {
-      const diagrams = await this.diagramModel
-        .find({ userId })
-        .select('-tables -relationships -__v')
-        .exec();
+  async findSummaryDiagrams(
+    filter: FilterQuery<Diagram>,
+  ): Promise<SummaryDiagramDto[]> {
+    const diagrams = await this.diagramModel
+      .find(filter)
+      .select('_id name description visibility createdAt updatedAt')
+      .lean()
+      .exec();
 
-      return diagrams.map((diagram) => ({
-        id: diagram._id.toString(),
-        name: diagram.name,
-        description: diagram.description,
-      }));
-    } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      throw new InternalServerErrorException(error.message);
-    }
+    return diagrams.map((d) => ({
+      id: d._id.toString(),
+      name: d.name,
+      description: d.description,
+      visibility: d.visibility,
+      createdAt: d.createdAt,
+      updatedAt: d.updatedAt,
+    }));
   }
 
-  async findById(id: string): Promise<DiagramDetailDto> {
-    const diagram = await this.diagramModel.findById(id).select('-__v').exec();
+  async findDiagramById(filter: FilterQuery<Diagram>): Promise<DiagramDto> {
+    const diagram = await this.diagramModel
+      .findOne(filter)
+      .select('-__v')
+      .lean()
+      .exec();
 
     if (!diagram) {
       throw new NotFoundException('Diagram not found');
     }
 
-    try {
-      return {
-        id: diagram._id.toString(),
-        name: diagram.name,
-        description: diagram.description,
-        tables: diagram.tables,
-        relationships: diagram.relationships,
-      };
-    } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      throw new InternalServerErrorException(error.message);
-    }
+    return {
+      id: diagram._id.toString(),
+      name: diagram.name,
+      description: diagram.description,
+      tables: diagram.tables,
+      relationships: diagram.relationships,
+      visibility: diagram.visibility,
+      createdAt: diagram.createdAt,
+      updatedAt: diagram.updatedAt,
+    };
   }
 
-  async create(
-    userId: string,
-    dto: CreateDiagramDto,
-  ): Promise<DiagramDetailDto> {
+  async create(userId: string, dto: CreateDiagramDto): Promise<DiagramDto> {
     try {
       const diagram = new this.diagramModel({ ...dto, userId });
       await diagram.save();
@@ -70,6 +71,9 @@ export class DiagramService {
         description: diagram.description,
         tables: diagram.tables,
         relationships: diagram.relationships,
+        visibility: diagram.visibility,
+        createdAt: diagram.createdAt,
+        updatedAt: diagram.updatedAt,
       };
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -77,8 +81,12 @@ export class DiagramService {
     }
   }
 
-  async update(id: string, dto: UpdateDiagramDto): Promise<DiagramDetailDto> {
-    const diagram = await this.diagramModel.findById(id);
+  async update(
+    id: string,
+    userId: string,
+    dto: UpdateDiagramDto,
+  ): Promise<DiagramDto> {
+    const diagram = await this.diagramModel.findOne({ _id: id, userId });
     if (!diagram) {
       throw new NotFoundException('Diagram not found');
     }
@@ -95,6 +103,9 @@ export class DiagramService {
         description: updatedDiagram!.description,
         tables: updatedDiagram!.tables,
         relationships: updatedDiagram!.relationships,
+        visibility: updatedDiagram!.visibility,
+        createdAt: updatedDiagram!.createdAt,
+        updatedAt: updatedDiagram!.updatedAt,
       };
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -102,13 +113,49 @@ export class DiagramService {
     }
   }
 
-  async delete(id: string) {
-    const diagram = await this.diagramModel.findById(id);
+  async delete(id: string, userId: string): Promise<void> {
+    const diagram = await this.diagramModel.findOne({ _id: id, userId });
     if (!diagram) {
       throw new NotFoundException('Diagram not found');
     }
     try {
-      return await this.diagramModel.findByIdAndDelete(id);
+      await this.diagramModel.findByIdAndDelete(id);
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async updateShareSettings(
+    id: string,
+    userId: string,
+    dto: UpdateShareSettingsDto,
+  ): Promise<DiagramDto> {
+    const diagram = await this.diagramModel
+      .findOne({ _id: id, userId })
+      .select('-__v')
+      .exec();
+    if (!diagram) {
+      throw new NotFoundException('Diagram not found');
+    }
+
+    try {
+      const updatedDiagram = await this.diagramModel.findByIdAndUpdate(
+        id,
+        dto,
+        { new: true },
+      );
+
+      return {
+        id: updatedDiagram!._id.toString(),
+        name: updatedDiagram!.name,
+        description: updatedDiagram!.description,
+        tables: updatedDiagram!.tables,
+        relationships: updatedDiagram!.relationships,
+        visibility: updatedDiagram!.visibility,
+        createdAt: updatedDiagram!.createdAt,
+        updatedAt: updatedDiagram!.updatedAt,
+      };
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       throw new InternalServerErrorException(error.message);

@@ -2,19 +2,20 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, HydratedDocument } from 'mongoose';
 import { RelationshipType } from '../types/relationship.type';
 import { ColumnDataType } from '../types/column-data.type';
+import { Visibility } from '../types/visibility.type';
 
 export type DiagramDocument = HydratedDocument<Diagram>;
 
 @Schema({ timestamps: true })
 export class Diagram {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   name: string;
 
   @Prop({ required: false })
   description?: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
-  userId: mongoose.Schema.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
 
   @Prop({
     type: [
@@ -85,12 +86,22 @@ export class Diagram {
   relationships: {
     id: string;
     name: string;
-    fromTable: string;
-    fromColumn: string;
-    toTable: string;
-    toColumn: string;
-    type: RelationshipType;
+    fromTable?: string;
+    fromColumn?: string;
+    toTable?: string;
+    toColumn?: string;
+    type?: RelationshipType;
   }[];
+
+  @Prop({
+    type: String,
+    enum: Object.values(Visibility),
+    default: Visibility.PRIVATE,
+  })
+  visibility: Visibility;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const DiagramSchema = SchemaFactory.createForClass(Diagram);
