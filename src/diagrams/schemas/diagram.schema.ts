@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, HydratedDocument } from 'mongoose';
 import { RelationshipType } from '../types/relationship.type';
 import { ColumnDataType } from '../types/column-data.type';
-import { Visibility } from '../types/visibility.type';
+import { DatabaseType } from '../types/database.type';
 
 export type DiagramDocument = HydratedDocument<Diagram>;
 
@@ -10,9 +10,6 @@ export type DiagramDocument = HydratedDocument<Diagram>;
 export class Diagram {
   @Prop({ required: true })
   name: string;
-
-  @Prop({ required: false })
-  description?: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   userId: mongoose.Types.ObjectId;
@@ -25,10 +22,6 @@ export class Diagram {
         name: {
           type: String,
           required: true,
-        },
-        position: {
-          x: { type: Number, default: 0 },
-          y: { type: Number, default: 0 },
         },
         columns: [
           {
@@ -43,7 +36,6 @@ export class Diagram {
             isPrimary: { type: Boolean, default: false },
             isUnique: { type: Boolean, default: false },
             isNullable: { type: Boolean, default: true },
-            default: { type: String, required: false },
           },
         ],
       },
@@ -53,7 +45,6 @@ export class Diagram {
   tables: {
     id: string;
     name: string;
-    position: { x: number; y: number };
     columns: {
       id: string;
       name: string;
@@ -61,7 +52,6 @@ export class Diagram {
       isPrimary: boolean;
       isUnique: boolean;
       isNullable: boolean;
-      default?: string;
     }[];
   }[];
 
@@ -93,12 +83,8 @@ export class Diagram {
     type?: RelationshipType;
   }[];
 
-  @Prop({
-    type: String,
-    enum: Object.values(Visibility),
-    default: Visibility.PRIVATE,
-  })
-  visibility: Visibility;
+  @Prop({ type: String, enum: Object.values(DatabaseType), required: true })
+  type: DatabaseType;
 
   createdAt: Date;
   updatedAt: Date;

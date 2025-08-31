@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
-import { PositionDto } from './position.dto';
 import { ColumnDto } from './column.dto';
 
 export class TableDto {
@@ -14,11 +13,6 @@ export class TableDto {
   @IsString()
   @IsNotEmpty()
   name: string;
-
-  @ApiProperty({ description: 'Table position' })
-  @ValidateNested()
-  @Type(() => PositionDto)
-  position: PositionDto;
 
   @ApiProperty({
     description: 'Table columns',

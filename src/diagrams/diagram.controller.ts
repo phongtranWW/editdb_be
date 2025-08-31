@@ -1,13 +1,16 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   NotFoundException,
   Param,
-  Patch,
+  ParseEnumPipe,
+  ParseIntPipe,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -21,12 +24,14 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { SummaryDiagramDto } from './dtos/response/summary-diagram.dto';
 import { DiagramDto } from './dtos/response/diagram.dto';
-import { UpdateShareSettingsDto } from './dtos/request/update-share-setting.dto';
+import { SortOrder } from 'mongoose';
+import { PaginationDto } from 'src/shared/dto/pagination.dto';
 
 @ApiTags('Diagrams')
 @ApiBearerAuth()
@@ -36,19 +41,52 @@ export class DiagramController {
 
   @ApiResponse({
     status: 200,
-    type: [SummaryDiagramDto],
   })
   @ApiResponse({ status: 500 })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    enum: ['asc', 'desc'],
+  })
   @Get('diagrams')
   @UseGuards(JwtGuard)
   async findUserSummaryDiagrams(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('search', new DefaultValuePipe('')) search: string,
+    @Query(
+      'sort',
+      new DefaultValuePipe('asc'),
+      new ParseEnumPipe(['asc', 'desc']),
+    )
+    sort: SortOrder,
     @Req() req: Request,
-  ): Promise<SummaryDiagramDto[]> {
+  ): Promise<PaginationDto<SummaryDiagramDto>> {
     const user = req.user as JwtPayload;
     if (!user || !user.sub) {
       throw new NotFoundException('User not found in request');
     }
-    return await this.diagramService.findSummaryDiagrams({ userId: user.sub });
+    return await this.diagramService.findSummaryDiagrams(
+      { userId: user.sub, name: { $regex: search, $options: 'i' } },
+      page,
+      limit,
+      sort,
+    );
   }
 
   @ApiResponse({
@@ -108,27 +146,6 @@ export class DiagramController {
       throw new NotFoundException('User not found in request');
     }
     return this.diagramService.update(id, user.sub, dto);
-  }
-
-  @Patch('diagrams/:id/share')
-  @ApiBody({ type: UpdateShareSettingsDto })
-  @ApiResponse({
-    status: 200,
-    type: DiagramDto,
-  })
-  @ApiResponse({ status: 400 })
-  @ApiResponse({ status: 500 })
-  @UseGuards(JwtGuard)
-  async updateShareSettings(
-    @Param('id') id: string,
-    @Body() dto: UpdateShareSettingsDto,
-    @Req() req: Request,
-  ): Promise<DiagramDto> {
-    const user = req.user as JwtPayload;
-    if (!user || !user.sub) {
-      throw new NotFoundException('User not found in request');
-    }
-    return this.diagramService.updateShareSettings(id, user.sub, dto);
   }
 
   @Delete('diagrams/:id')

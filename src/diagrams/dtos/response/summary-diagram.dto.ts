@@ -1,5 +1,4 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Visibility } from 'src/diagrams/types/visibility.type';
 
 export class SummaryDiagramDto {
   @ApiProperty({ description: 'Diagram id', example: '1' })
@@ -25,10 +24,4 @@ export class SummaryDiagramDto {
     example: '2022-01-01T00:00:00.000Z',
   })
   updatedAt: Date;
-
-  @ApiProperty({
-    description: 'Diagram visibility',
-    enum: Visibility,
-  })
-  visibility: Visibility;
 }

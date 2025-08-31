@@ -1,11 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsBoolean,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsBoolean, IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { ColumnDataType } from 'src/diagrams/types/column-data.type';
 
 export class ColumnDto {
@@ -38,10 +32,4 @@ export class ColumnDto {
   @ApiProperty({ description: 'Is nullable', example: true })
   @IsBoolean()
   isNullable: boolean;
-
-  @ApiPropertyOptional({ description: 'Default value', example: null })
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  default?: string;
 }
