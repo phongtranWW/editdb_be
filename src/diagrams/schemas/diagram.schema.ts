@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, HydratedDocument } from 'mongoose';
 import { RelationshipType } from '../types/relationship.type';
-import { ColumnDataType } from '../types/column-data.type';
 import { DatabaseType } from '../types/database.type';
 
 export type DiagramDocument = HydratedDocument<Diagram>;
@@ -30,7 +29,6 @@ export class Diagram {
             name: { type: String, required: true },
             type: {
               type: String,
-              enum: Object.values(ColumnDataType),
               required: true,
             },
             isPrimary: { type: Boolean, default: false },
@@ -48,7 +46,7 @@ export class Diagram {
     columns: {
       id: string;
       name: string;
-      type: ColumnDataType;
+      type: string;
       isPrimary: boolean;
       isUnique: boolean;
       isNullable: boolean;

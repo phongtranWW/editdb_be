@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { ColumnDataType } from 'src/diagrams/types/column-data.type';
+import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 
 export class ColumnDto {
   @ApiProperty({ description: 'Column id', example: '1' })
@@ -15,11 +14,11 @@ export class ColumnDto {
 
   @ApiProperty({
     description: 'Column data type',
-    enum: ColumnDataType,
-    example: ColumnDataType.VARCHAR,
+    example: 'VARCHAR(50)',
   })
-  @IsEnum(ColumnDataType)
-  type: ColumnDataType;
+  @IsString()
+  @IsNotEmpty()
+  type: string;
 
   @ApiProperty({ description: 'Is primary key', example: false })
   @IsBoolean()
