@@ -27,7 +27,7 @@ export class DiagramService {
     try {
       const diagrams = await this.diagramModel
         .find(filter)
-        .select('_id name createdAt updatedAt')
+        .select('_id name type createdAt updatedAt')
         .sort({ name: sort, createdAt: 'asc' })
         .skip((page - 1) * limit)
         .limit(limit)
@@ -38,6 +38,7 @@ export class DiagramService {
         total,
         data: diagrams.map((diagram) => ({
           id: diagram._id.toString(),
+          type: diagram.type,
           name: diagram.name,
           createdAt: diagram.createdAt,
           updatedAt: diagram.updatedAt,

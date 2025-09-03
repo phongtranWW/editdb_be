@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { DatabaseType } from 'src/diagrams/types/database.type';
 
 export class SummaryDiagramDto {
   @ApiProperty({ description: 'Diagram id', example: '1' })
@@ -6,6 +7,13 @@ export class SummaryDiagramDto {
 
   @ApiProperty({ description: 'Diagram name', example: 'ERD v2' })
   name: string;
+
+  @ApiProperty({
+    description: 'Database type',
+    enum: DatabaseType,
+    example: DatabaseType.MYSQL,
+  })
+  type: DatabaseType;
 
   @ApiPropertyOptional({
     description: 'Diagram description',
