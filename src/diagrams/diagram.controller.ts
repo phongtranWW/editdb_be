@@ -19,7 +19,7 @@ import { CreateDiagramDto } from './dtos/request/create-diagram.dto';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { UpdateDiagramDto } from './dtos/request/update-diagram.dto';
 import { Request } from 'express';
-import { JwtPayload } from 'src/auth/strategies/types/jwt-payload.type';
+import { JwtPayload } from 'src/auth/types/jwt-payload.type';
 import {
   ApiBearerAuth,
   ApiBody,

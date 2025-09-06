@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Diagram } from './schemas/diagram.schema';
 import { FilterQuery, Model, SortOrder } from 'mongoose';
@@ -24,30 +20,25 @@ export class DiagramService {
     limit: number = 10,
     sort: SortOrder = 'asc',
   ): Promise<PaginationDto<SummaryDiagramDto>> {
-    try {
-      const diagrams = await this.diagramModel
-        .find(filter)
-        .select('_id name type createdAt updatedAt')
-        .sort({ name: sort, createdAt: 'asc' })
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .exec();
-      const total = await this.diagramModel.countDocuments(filter);
+    const diagrams = await this.diagramModel
+      .find(filter)
+      .select('_id name type createdAt updatedAt')
+      .sort({ name: sort, createdAt: 'asc' })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .exec();
+    const total = await this.diagramModel.countDocuments(filter);
 
-      return {
-        total,
-        data: diagrams.map((diagram) => ({
-          id: diagram._id.toString(),
-          type: diagram.type,
-          name: diagram.name,
-          createdAt: diagram.createdAt,
-          updatedAt: diagram.updatedAt,
-        })),
-      };
-    } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      throw new InternalServerErrorException(error.message);
-    }
+    return {
+      total,
+      data: diagrams.map((diagram) => ({
+        id: diagram._id.toString(),
+        type: diagram.type,
+        name: diagram.name,
+        createdAt: diagram.createdAt,
+        updatedAt: diagram.updatedAt,
+      })),
+    };
   }
 
   async findDiagramById(filter: FilterQuery<Diagram>): Promise<DiagramDto> {
@@ -72,23 +63,18 @@ export class DiagramService {
   }
 
   async create(userId: string, dto: CreateDiagramDto): Promise<DiagramDto> {
-    try {
-      const diagram = new this.diagramModel({ ...dto, userId });
-      await diagram.save();
+    const diagram = new this.diagramModel({ ...dto, userId });
+    await diagram.save();
 
-      return {
-        id: diagram._id.toString(),
-        name: diagram.name,
-        tables: diagram.tables,
-        relationships: diagram.relationships,
-        type: diagram.type,
-        createdAt: diagram.createdAt,
-        updatedAt: diagram.updatedAt,
-      };
-    } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      throw new InternalServerErrorException(error.message);
-    }
+    return {
+      id: diagram._id.toString(),
+      name: diagram.name,
+      tables: diagram.tables,
+      relationships: diagram.relationships,
+      type: diagram.type,
+      createdAt: diagram.createdAt,
+      updatedAt: diagram.updatedAt,
+    };
   }
 
   async update(
@@ -100,26 +86,19 @@ export class DiagramService {
     if (!diagram) {
       throw new NotFoundException('Diagram not found');
     }
-    try {
-      const updatedDiagram = await this.diagramModel.findByIdAndUpdate(
-        id,
-        dto,
-        { new: true },
-      );
+    const updatedDiagram = await this.diagramModel.findByIdAndUpdate(id, dto, {
+      new: true,
+    });
 
-      return {
-        id: updatedDiagram!._id.toString(),
-        name: updatedDiagram!.name,
-        tables: updatedDiagram!.tables,
-        relationships: updatedDiagram!.relationships,
-        type: updatedDiagram!.type,
-        createdAt: updatedDiagram!.createdAt,
-        updatedAt: updatedDiagram!.updatedAt,
-      };
-    } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      throw new InternalServerErrorException(error.message);
-    }
+    return {
+      id: updatedDiagram!._id.toString(),
+      name: updatedDiagram!.name,
+      tables: updatedDiagram!.tables,
+      relationships: updatedDiagram!.relationships,
+      type: updatedDiagram!.type,
+      createdAt: updatedDiagram!.createdAt,
+      updatedAt: updatedDiagram!.updatedAt,
+    };
   }
 
   async delete(id: string, userId: string): Promise<void> {
@@ -127,11 +106,6 @@ export class DiagramService {
     if (!diagram) {
       throw new NotFoundException('Diagram not found');
     }
-    try {
-      await this.diagramModel.findByIdAndDelete(id);
-    } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      throw new InternalServerErrorException(error.message);
-    }
+    await this.diagramModel.findByIdAndDelete(id);
   }
 }

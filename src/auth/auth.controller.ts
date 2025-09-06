@@ -1,17 +1,21 @@
 import {
+  Body,
   Controller,
   Get,
-  NotFoundException,
+  Post,
   Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
 import { GoogleOAuthGuard } from './guards/google.guard';
 import { AuthService } from './auth.service';
-import { JwtPayload } from './strategies/types/jwt-payload.type';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { RegisterDto } from './dtos/register.dto';
+import { LoginDto } from './dtos/login.dto';
+import { LocalGuard } from './guards/local.guard';
+import { JwtInternal } from './internals/jwt.internal';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -36,15 +40,26 @@ export class AuthController {
   })
   @UseGuards(GoogleOAuthGuard)
   loginGoogleRedirect(@Req() req: Request, @Res() res: Response) {
-    const user = req.user as JwtPayload;
-    if (!user || !user.sub) {
-      throw new NotFoundException('User not found in request');
-    }
-    const { accessToken } = this.authService.provideToken(user);
+    const { accessToken } = this.authService.provideToken(
+      req.user as JwtInternal,
+    );
     const frontendRedirectUrl: string = this.configService.getOrThrow(
       'FRONTEND_REDIRECT_URL',
     );
 
     return res.redirect(`${frontendRedirectUrl}?token=${accessToken}`);
+  }
+
+  @Post('login')
+  @UseGuards(LocalGuard)
+  @ApiBody({ type: LoginDto })
+  login(@Body() dto: LoginDto, @Req() req: Request) {
+    return this.authService.provideToken(req.user as JwtInternal);
+  }
+
+  @Post('register')
+  @ApiBody({ type: RegisterDto })
+  async register(@Body() dto: RegisterDto) {
+    await this.authService.register(dto);
   }
 }

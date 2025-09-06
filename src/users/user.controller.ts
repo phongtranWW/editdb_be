@@ -1,16 +1,10 @@
-import {
-  Controller,
-  Get,
-  NotFoundException,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProfileDto } from './dtos/profile.dto';
 import { Request } from 'express';
-import { JwtPayload } from 'src/auth/strategies/types/jwt-payload.type';
+import { JwtInternal } from 'src/auth/internals/jwt.internal';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -27,10 +21,7 @@ export class UserController {
   @Get('me')
   @UseGuards(JwtGuard)
   async getProfile(@Req() req: Request) {
-    const user = req.user as JwtPayload;
-    if (!user || !user.sub) {
-      throw new NotFoundException('User not found in request');
-    }
+    const user = req.user as JwtInternal;
     return this.userService.getProfile(user.sub);
   }
 }

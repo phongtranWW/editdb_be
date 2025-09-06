@@ -1,7 +1,15 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/users/user.service';
-import { JwtPayload } from './strategies/types/jwt-payload.type';
+import { ValidateOAthInternal } from './internals/validate-oauth.internal';
+import { RegisterDto } from './dtos/register.dto';
+import { Provider } from 'src/users/types/provider';
+import { compare, hash } from 'bcrypt';
+import { JwtInternal } from './internals/jwt.internal';
 
 @Injectable()
 export class AuthService {
@@ -10,60 +18,94 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateOAuthLogin(payload: {
-    email: string;
-    name: string;
-    provider: string;
-    providerId: string;
-    avatar?: string;
-  }): Promise<JwtPayload> {
-    let userByEmail = await this.userService.findOneByEmail(payload.email);
+  async validateOAuthLogin(
+    internal: ValidateOAthInternal,
+  ): Promise<JwtInternal> {
+    let user = await this.userService.findOneByEmail(internal.email);
 
-    if (!userByEmail) {
-      // Create new user
-      userByEmail = await this.userService.create({
-        email: payload.email,
-        name: payload.name,
-        avatar: payload.avatar,
+    if (!user) {
+      user = await this.userService.create({
+        email: internal.email,
+        name: internal.name,
+        avatar: internal.avatar,
         providers: [
           {
-            provider: payload.provider,
-            providerId: payload.providerId,
+            provider: internal.provider,
+            providerId: internal.providerId,
           },
         ],
       });
     } else {
-      // Check if user is already registered
-      if (
-        !userByEmail.providers.find(
-          (provider) =>
-            provider.provider === payload.provider &&
-            provider.providerId === payload.provider,
-        )
-      ) {
-        userByEmail.providers.push({
-          provider: payload.provider,
-          providerId: payload.providerId,
+      const hasProvider = user.providers.some(
+        (p) =>
+          p.provider === internal.provider &&
+          p.providerId === internal.providerId,
+      );
+
+      if (!hasProvider) {
+        user = await this.userService.addProvider(user._id.toString(), {
+          provider: internal.provider,
+          providerId: internal.providerId,
         });
-        await userByEmail.save();
       }
     }
 
     return {
-      sub: userByEmail._id.toString(),
-      email: userByEmail.email,
-      roles: userByEmail.roles,
+      sub: user!._id.toString(),
+      email: user!.email,
+      role: user!.role,
+      name: user!.name,
+      avatar: user!.avatar,
     };
   }
 
-  provideToken(payload: JwtPayload) {
-    try {
-      return {
-        accessToken: this.jwtService.sign(payload),
-      };
-    } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      throw new InternalServerErrorException(error.message);
+  async validateLogin(email: string, password: string): Promise<JwtInternal> {
+    const user = await this.userService.findOneByEmail(email);
+    if (!user) {
+      throw new BadRequestException('Invalid email or password');
     }
+    const provider = user.providers.find(
+      (p) => p.provider === Provider.PASSWORD,
+    );
+    if (!provider || !provider.hash) {
+      throw new BadRequestException('User is not registered with password');
+    }
+    const validPassword = await compare(password, provider.hash);
+    if (!validPassword) {
+      throw new BadRequestException('Invalid email or password');
+    }
+    return {
+      sub: user._id.toString(),
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      avatar: user.avatar,
+    };
+  }
+
+  async register(dto: RegisterDto) {
+    const user = await this.userService.findOneByEmail(dto.email);
+
+    if (user) {
+      throw new ConflictException('Email already exists');
+    }
+    const hashPassword: string = await hash(dto.password, 10);
+
+    await this.userService.create({
+      email: dto.email,
+      name: dto.name,
+      providers: [
+        {
+          provider: Provider.PASSWORD,
+          hash: hashPassword,
+        },
+      ],
+    });
+  }
+
+  provideToken(internal: JwtInternal) {
+    return {
+      accessToken: this.jwtService.sign(internal),
+    };
   }
 }

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class ProfileDto {
   @ApiProperty({
@@ -16,10 +16,10 @@ export class ProfileDto {
   })
   name: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Avatar of the user',
   })
-  avatar: string;
+  avatar?: string;
 
   @ApiProperty({
     description: 'Is the user active ?',
