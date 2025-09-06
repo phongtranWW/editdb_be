@@ -4,7 +4,6 @@ import {
   DefaultValuePipe,
   Delete,
   Get,
-  NotFoundException,
   Param,
   ParseEnumPipe,
   ParseIntPipe,
@@ -19,7 +18,6 @@ import { CreateDiagramDto } from './dtos/request/create-diagram.dto';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { UpdateDiagramDto } from './dtos/request/update-diagram.dto';
 import { Request } from 'express';
-import { JwtPayload } from 'src/auth/types/jwt-payload.type';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -32,6 +30,7 @@ import { SummaryDiagramDto } from './dtos/response/summary-diagram.dto';
 import { DiagramDto } from './dtos/response/diagram.dto';
 import { SortOrder } from 'mongoose';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
+import { JwtInternal } from 'src/auth/internals/jwt.internal';
 
 @ApiTags('Diagrams')
 @ApiBearerAuth()
@@ -77,10 +76,7 @@ export class DiagramController {
     sort: SortOrder,
     @Req() req: Request,
   ): Promise<PaginationDto<SummaryDiagramDto>> {
-    const user = req.user as JwtPayload;
-    if (!user || !user.sub) {
-      throw new NotFoundException('User not found in request');
-    }
+    const user = req.user as JwtInternal;
     return await this.diagramService.findSummaryDiagrams(
       { userId: user.sub, name: { $regex: search, $options: 'i' } },
       page,
@@ -100,10 +96,7 @@ export class DiagramController {
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<DiagramDto> {
-    const user = req.user as JwtPayload;
-    if (!user || !user.sub) {
-      throw new NotFoundException('User not found in request');
-    }
+    const user = req.user as JwtInternal;
     return await this.diagramService.findDiagramById({
       _id: id,
       userId: user.sub,
@@ -120,10 +113,7 @@ export class DiagramController {
     @Body() dto: CreateDiagramDto,
     @Req() req: Request,
   ): Promise<DiagramDto> {
-    const user = req.user as JwtPayload;
-    if (!user || !user.sub) {
-      throw new NotFoundException('User not found in request');
-    }
+    const user = req.user as JwtInternal;
     return this.diagramService.create(user.sub, dto);
   }
 
@@ -141,10 +131,7 @@ export class DiagramController {
     @Body() dto: UpdateDiagramDto,
     @Req() req: Request,
   ): Promise<DiagramDto> {
-    const user = req.user as JwtPayload;
-    if (!user || !user.sub) {
-      throw new NotFoundException('User not found in request');
-    }
+    const user = req.user as JwtInternal;
     return this.diagramService.update(id, user.sub, dto);
   }
 
@@ -154,10 +141,7 @@ export class DiagramController {
   @ApiResponse({ status: 500 })
   @UseGuards(JwtGuard)
   async delete(@Param('id') id: string, @Req() req: Request): Promise<void> {
-    const user = req.user as JwtPayload;
-    if (!user || !user.sub) {
-      throw new NotFoundException('User not found in request');
-    }
+    const user = req.user as JwtInternal;
     return await this.diagramService.delete(id, user.sub);
   }
 }
